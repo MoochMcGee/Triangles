@@ -1,0 +1,8 @@
+# depslib dependency file v1.0
+1375461043 source:c:\users\darius\documents\sdl3d\main.cpp
+	"sdl3d.h"
+
+1375469841 c:\users\darius\documents\sdl3d\sdl3d.h
+	<cmath>
+	<SDL.h>
+
