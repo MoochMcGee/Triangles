@@ -8,8 +8,8 @@ int main(int argc, char** argv)
 
     screen = SDL_SetVideoMode(640,480,24,SDL_SWSURFACE);
 
-    st.wireframe = false;
-    st.textured = true;
+    st.wireframe = true;
+    st.textured = false;
 
     triangle tri[2];
     tri[0].p[0].x = -0.1;
@@ -49,7 +49,7 @@ int main(int argc, char** argv)
     tri[0].perspective(-1,0,0);
     //tri[1].perspective(-1,0,0);
 
-    for(int i = 0;i<500;i++)
+    for(int i = 0;i<100;i++)
     {
         SDL_FillRect(screen,&screen->clip_rect,SDL_MapRGB(screen->format,0,0,0));
 

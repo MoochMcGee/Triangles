@@ -2,7 +2,7 @@
 #define SDL3D_H
 
 #include <cmath>
-#include <SDL.h>
+#include <SDL/SDL.h>
 
 SDL_Surface* screen;
 
@@ -160,60 +160,92 @@ namespace SDL3D
             }
         }
 	}
-	void rendertexturedtri(int x0, int y0, int x1, int y1, int x2, int y2, int u0, int v0, int u1, int v1, int u2, int v2, SDL_Surface* texture)
+	void rendertexturedtri(int x0, int y0, int x1, int y1, int x2, int y2, int r, int g, int b)
 	{
-	    if(y0 != y1 && y0 != y2 && texture != nullptr)
-        {
-                float startx = x0;
-                float endx = x0 + ((x1-x0)/(y1-y0));
-
-                if(startx < 0) startx = 0;
-                if(endx > screen->w) endx = screen->w;
-
-                int u = u0;
-                int v = v0;
-
-                int r, g, b;
-
-                for(int i = y0;i<=y1;i++)
+	    if(y1 < y0)
+	    {
+	        int tmp = y0;
+	        y0 = y1;
+	        y1 = tmp;
+	        
+	        tmp = x0;
+	        x0 = x1;
+	        x1 = tmp;
+	    }
+	    if(y2 < y0)
+	    {
+	        int tmp = y2;
+	        y2 = y1;
+	        y1 = y0;
+	        y0 = tmp;
+	        
+	        tmp = x2;
+	        x2 = x1;
+	        x1 = x0;
+	        x0 = tmp;
+	    }
+	    else if(y2 < y1)
+	    {
+	        int tmp = y1;
+	        y1 = y2;
+	        y2 = tmp;
+	        
+	        tmp = x1;
+	        x1 = x2;
+	        x2 = tmp;
+	    }
+            
+            if(y1==y0) return;
+            if(y2==y0) return;
+            if(y2==y1) return;
+            
+            float d0 = (x1-x0)/(y1-y0);
+            float d1 = (x2-x0)/(y2-y0);
+            
+            float startx = x0;
+            float endx = x0;
+            
+            for(int i = y0;i<=y1;i++)
+            {
+                if(startx <= endx)
                 {
                     for(int j = startx;j<=endx;j++)
                     {
-                        uint8_t* p = (uint8_t*)texture->pixels;
-                        //r = p[((u + (v*texture->w))*3)+0];
-                        //g = p[((u + (v*texture->w))*3)+1];
-                        //b = p[((u + (v*texture->w))*3)+2];
-                        r = 255;
-                        g = 0;
-                        b = 0;
-                        putpix(j,i,r,g,b);
-                        u++;
+                        putpix(i,j,r,g,b);
                     }
-                    startx -= ((x2-x0)/(y2-y0));
-                    endx += ((x1-x0)/(y1-y0));
                 }
-
-                startx = x2;
-                endx = x2;
-
-                for(int i = y2;i>y1;i--)
+                else
+                {
+                    for(int j = startx;j<=endx;j--)
+                    {
+                        putpix(i,j,r,g,b);
+                    }
+                }
+                startx += d0;
+                endx += d1;
+            }
+            
+            float d1 = (x2-x1)/(y2-y1);
+            
+            for(int i = y1;i<=y2;i++)
+            {
+                if(startx <= endx)
                 {
                     for(int j = startx;j<=endx;j++)
                     {
-                        uint8_t* p = (uint8_t*)texture->pixels;
-                        //b = p[((u + (v*texture->w))*3)+0];
-                        //g = p[((u + (v*texture->w))*3)+1];
-                        //r = p[((u + (v*texture->w))*3)+2];
-                        r = 255;
-                        g = 255;
-                        b = 255;
-                        putpix(j,i,r,g,b);
-                        u++;
+                        putpix(i,j,r,g,b);
                     }
-                    startx += ((x2-x0)/(y2-y0));
-                    endx += ((x2-x1)/(y2-y1));
                 }
-        }
+                else
+                {
+                    for(int j = startx;j<=endx;j--)
+                    {
+                        putpix(i,j,r,g,b);
+                    }
+                }
+                startx += d0;
+                endx += d1;
+            }
 	}
 
 	struct triangle
@@ -355,7 +387,7 @@ namespace SDL3D
             }
             else
             {
-                rendertexturedtri(x0,y0,x1,y1,x2,y2,u0,v0,u1,v1,u2,v2,texture);
+                rendertexturedtri(x0,y0,x1,y1,x2,y2,r,g,b);
             }
 	    }
 	};
