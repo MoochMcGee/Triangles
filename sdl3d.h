@@ -15,10 +15,10 @@ namespace SDL3D
     } st;
 	struct Vector
 	{
-		float x,y,z,hv;
+		float x,y,z,w;
 		Vector()
 		{
-		    hv = 1;
+		    w = 1;
 		}
 		float length()
 		{
@@ -122,21 +122,21 @@ namespace SDL3D
 	    int sy = (y0 < y1) ? 1 : -1;
 	    int err = dx-dy;
 	    for(;;)
-        {
-            putpix(x,y,r,g,b);
-            if(x == x1 && y == y1) break;
-            int e2 = err << 1;
-            if(e2 >= -dy)
             {
-                err -= dy;
-                x += sx;
+                putpix(x,y,r,g,b);
+                if(x == x1 && y == y1) break;
+                int e2 = err << 1;
+                if(e2 >= -dy)
+                {
+                    err -= dy;
+                    x += sx;
+                }
+                if(e2 < dx)
+                {
+                    err += dx;
+                    y += sy;
+                }
             }
-            if(e2 < dx)
-            {
-                err += dx;
-                y += sy;
-            }
-        }
 	}
 	void floodfill(int x, int y, int r, int g, int b)
 	{
@@ -164,35 +164,18 @@ namespace SDL3D
 	{
 	    if(y1 < y0)
 	    {
-	        int tmp = y0;
-	        y0 = y1;
-	        y1 = tmp;
-	        
-	        tmp = x0;
-	        x0 = x1;
-	        x1 = tmp;
+	        std::swap(y0,y1);
+	        std::swap(x0,x1);
 	    }
 	    if(y2 < y0)
 	    {
-	        int tmp = y2;
-	        y2 = y1;
-	        y1 = y0;
-	        y0 = tmp;
-	        
-	        tmp = x2;
-	        x2 = x1;
-	        x1 = x0;
-	        x0 = tmp;
+	        std::swap(y0,y2);
+	        std::swap(x0,x2);
 	    }
 	    else if(y2 < y1)
 	    {
-	        int tmp = y1;
-	        y1 = y2;
-	        y2 = tmp;
-	        
-	        tmp = x1;
-	        x1 = x2;
-	        x2 = tmp;
+	        std::swap(y1,y2);
+	        std::swap(x1,x2);
 	    }
             
             if(y1==y0) return;
@@ -329,32 +312,31 @@ namespace SDL3D
 	        p[1] = matrixmul(tm,p[1]);
 	        p[2] = matrixmul(tm,p[2]);
 	    }
-	    void perspective(float near, float ex, float ey)
+	    void render()
 	    {
 	        matrix tm;
 	        float tme[4][4] = {{1,0,-(ex/near),0},{0,1,-(ey/near),0},{0,0,1,0},{0,0,1/near,0}};
 	        for(int i = 0;i<4;i++)
-            {
-                for(int j = 0;j<4;j++)
-                {
-                    tm.e[i][j] = tme[i][j];
+	        {
+                    for(int j = 0;j<4;j++)
+                    {
+                        tm.e[i][j] = tme[i][j];
+                    }
                 }
-            }
-	        p[0] = matrixmul(tm,p[0]);
-	        p[1] = matrixmul(tm,p[1]);
-	        p[2] = matrixmul(tm,p[2]);
-	        scadiv(p[0],p[0].hv);
-	        scadiv(p[1],p[1].hv);
-	        scadiv(p[2],p[2].hv);
-	    }
-	    void render()
-	    {
-            float x0 = ((p[0].x + 1)/2 * (screen->w-1));
-            float y0 = ((p[0].y + 1)/2 * (screen->h-1));
-            float x1 = ((p[1].x + 1)/2 * (screen->w-1));
-            float y1 = ((p[1].y + 1)/2 * (screen->h-1));
-            float x2 = ((p[2].x + 1)/2 * (screen->w-1));
-            float y2 = ((p[2].y + 1)/2 * (screen->h-1));
+                Vector pp[3];
+	        pp[0] = matrixmul(tm,p[0]);
+	        pp[1] = matrixmul(tm,p[1]);
+	        pp[2] = matrixmul(tm,p[2]);
+	        scadiv(pp[0],pp[0].w);
+	        scadiv(pp[1],pp[1].w);
+	        scadiv(pp[2],pp[2].w);
+	    
+            float x0 = ((pp[0].x + 1)/2 * (screen->w-1));
+            float y0 = ((pp[0].y + 1)/2 * (screen->h-1));
+            float x1 = ((pp[1].x + 1)/2 * (screen->w-1));
+            float y1 = ((pp[1].y + 1)/2 * (screen->h-1));
+            float x2 = ((pp[2].x + 1)/2 * (screen->w-1));
+            float y2 = ((pp[2].y + 1)/2 * (screen->h-1));
 
             for(int i = 0;i<2;i++)
             {
@@ -372,7 +354,7 @@ namespace SDL3D
             float u2 = ((uv[0][2] + 1)/2) * (texture->w-1);
             float v2 = ((uv[1][2] + 1)/2) * (texture->h-1);
 
-            if(!st.textured)
+            /*if(!st.textured)
             {
                 renderline(x0,y0,x1,y1,r,g,b);
                 renderline(x0,y0,x2,y2,r,g,b);
@@ -385,7 +367,7 @@ namespace SDL3D
                     floodfill(avgx,avgy,r,g,b);
                 }
             }
-            else
+            else*/
             {
                 rendertexturedtri(x0,y0,x1,y1,x2,y2,r,g,b);
             }

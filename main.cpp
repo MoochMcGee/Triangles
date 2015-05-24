@@ -46,7 +46,7 @@ int main(int argc, char** argv)
     tri[1].g = 0;
     tri[1].b = 0;*/
 
-    tri[0].perspective(-1,0,0);
+    
     //tri[1].perspective(-1,0,0);
 
     for(int i = 0;i<100;i++)
